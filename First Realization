@@ -1,0 +1,67 @@
+import re
+
+class GetBlocks:
+    """
+    获得文本块
+    """
+    block = []
+    def __init__(self,f):
+        self.f = f
+
+    def lines(self):
+        """
+        在文末加入一个空行
+        """
+        for line in self.f:
+            yield line
+        yield '\n'
+
+    def blocks(self):
+        for line in self.lines():
+            if line.strip():
+                GetBlocks.block.append(line.strip())
+            elif GetBlocks.block:
+                continue
+        # print(GetBlocks.block)
+        return GetBlocks.block
+
+class MarkUp:
+    """
+    添加一些标记
+    """
+    def __init__(self):
+        self.head = ['<html><head><title>我的第一个python项目</title></head><body>\n']
+        self.blocks = []
+
+    def tranfer(self):
+        title = True
+        temp = []
+        """
+        引用类GetBlocks的block
+        """
+        self.blocks = GetBlocks.block
+
+        for each in self.blocks:
+            each = re.sub(r'\*(.+?)\*',r'<em>\1</em>',each)
+            if title:
+                temp.extend(['<h1>\n',each,'\n</h1>\n'])
+                title = False
+            else:
+                temp.extend(['<p>\n',each,'\n</p>\n'])
+        temp.append('</body></html>')
+        self.blocks = self.head + temp
+        return self.blocks
+
+    def save_file(self):
+            text_html = open('text_output.html','w')
+            text_html.writelines(self.blocks)
+            text_html.close()
+
+
+with open('record.text','r') as f:
+    a = GetBlocks(f)
+    a.blocks()
+    b = MarkUp()
+    b.tranfer()
+    b.save_file()
+
